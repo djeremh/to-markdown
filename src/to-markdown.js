@@ -149,12 +149,19 @@ var toMarkdown = function(string) {
           lis[i] = lis[i].replace(/\s*<li[^>]*>([\s\S]*)/i, function(str, innerHTML) {
 
             innerHTML = innerHTML.replace(/^\s+/, '');
+            if (listType !== 'ol' && innerHTML === '') {
+              return '';
+            }
             innerHTML = innerHTML.replace(/\n\n/g, '\n\n    ');
             // indent nested lists
             innerHTML = innerHTML.replace(/\n([ ]*)+(\*|\d+\.) /g, '\n$1    $2 ');
             escapeTextFromMarkdown(innerHTML);
             return prefix + innerHTML;
           });
+          if (listType !== 'ol' && lis[i] === '') {
+            lis.splice(i, 1);
+            i--;
+          }
         }
       }
       return lis.join('\n');
