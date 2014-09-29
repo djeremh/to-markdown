@@ -16,7 +16,7 @@ var toMarkdown = function(string) {
     {
       patterns: 'p',
       replacement: function(str, attrs, innerHTML) {
-        return innerHTML ? '\n\n' + innerHTML + '\n' : '';
+        return innerHTML ? '\n\n' + escapeTextFromMarkdown(innerHTML) + '\n' : '';
       }
     },
     {
@@ -31,7 +31,7 @@ var toMarkdown = function(string) {
         for(var i = 0; i < hLevel; i++) {
           hPrefix += '#';
         }
-        return '\n\n' + hPrefix + ' ' + innerHTML + '\n';
+        return '\n\n' + hPrefix + ' ' + escapeTextFromMarkdown(innerHTML) + '\n';
       }
     },
     {
@@ -44,19 +44,19 @@ var toMarkdown = function(string) {
       replacement: function(str, attrs, innerHTML) {
         var href = attrs.match(attrRegExp('href')),
             title = attrs.match(attrRegExp('title'));
-        return href ? '[' + innerHTML + ']' + '(' + href[1] + (title && title[1] ? ' "' + title[1] + '"' : '') + ')' : str;
+        return href ? '[' + escapeTextFromMarkdown(innerHTML) + ']' + '(' + href[1] + (title && title[1] ? ' "' + title[1] + '"' : '') + ')' : str;
       }
     },
     {
       patterns: ['b', 'strong'],
       replacement: function(str, attrs, innerHTML) {
-        return innerHTML ? '**' + innerHTML + '**' : '';
+        return innerHTML ? '**' + escapeTextFromMarkdown(innerHTML) + '**' : '';
       }
     },
     {
       patterns: ['i', 'em'],
       replacement: function(str, attrs, innerHTML) {
-        return innerHTML ? '_' + innerHTML + '_' : '';
+        return innerHTML ? '_' + escapeTextFromMarkdown(innerHTML) + '_' : '';
       }
     },
     {
@@ -107,6 +107,12 @@ var toMarkdown = function(string) {
     return new RegExp(attr + '\\s*=\\s*["\']?([^"\']*)["\']?', 'i');
   }
 
+  // Escape markdown syntax character from html: #, *, -, +, _
+  function escapeTextFromMarkdown(text) {
+    var escapeChar = '\\';
+    return text.replace(/\#/g, escapeChar + '#').replace(/\*/g, escapeChar + '*').replace(/\-/g, escapeChar + '-').replace(/\+/g, escapeChar + '+').replace(/\_/g, escapeChar + '_');
+  }
+
   // Pre code blocks
 
   string = string.replace(/<pre\b[^>]*>`([\s\S]*)`<\/pre>/gi, function(str, innerHTML) {
@@ -146,6 +152,7 @@ var toMarkdown = function(string) {
             innerHTML = innerHTML.replace(/\n\n/g, '\n\n    ');
             // indent nested lists
             innerHTML = innerHTML.replace(/\n([ ]*)+(\*|\d+\.) /g, '\n$1    $2 ');
+            escapeTextFromMarkdown(innerHTML);
             return prefix + innerHTML;
           });
         }
